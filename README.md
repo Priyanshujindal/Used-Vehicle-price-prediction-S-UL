@@ -59,7 +59,3 @@ This will:
 
 The model uses features like year, condition, odometer, MMR, vehicle age, mileage per year, and encoded categorical variables (make, body, transmission, state, color).
 
-## License
-
-This project is for educational purposes.</content>
-<parameter name="filePath">c:\Users\DELL\OneDrive\Documents\S&UL\README.md#
