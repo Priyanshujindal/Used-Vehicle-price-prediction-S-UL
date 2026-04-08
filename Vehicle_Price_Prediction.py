@@ -25,7 +25,7 @@ warnings.filterwarnings('ignore')
 def load_data(filepath: str) -> pd.DataFrame:
     """Load the CSV dataset and print basic info."""
     df = pd.read_csv(filepath)
-    print(f"✅ Data loaded — Shape: {df.shape}")
+    print(f"Data loaded — Shape: {df.shape}")
     print(df.head())
     print(df.info())
     print(df.describe())
@@ -73,7 +73,7 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
       - standardise text
       - remove outliers
     """
-    print("\n🔧 Cleaning data...")
+    print("\nCleaning data...")
     print("Missing values before cleaning:")
     print(df.isnull().sum()[df.isnull().sum() > 0].sort_values(ascending=False))
 
@@ -170,7 +170,7 @@ def plot_avg_price_by_year(df: pd.DataFrame) -> None:
 
 def plot_correlation_heatmap(df: pd.DataFrame) -> None:
     """Heatmap of correlations among numeric features."""
-    num_cols = ['year', 'condition', 'odometer', 'mmr',
+    num_cols = ['year', 'condition', 'odometer',
                 'sellingprice', 'sale_year', 'sale_month']
     fig, ax = plt.subplots(figsize=(8, 6))
     sns.heatmap(
@@ -184,7 +184,7 @@ def plot_correlation_heatmap(df: pd.DataFrame) -> None:
 
 def run_eda(df: pd.DataFrame) -> None:
     """Run all EDA plots."""
-    print("\n📊 Running EDA...")
+    print("\nRunning EDA...")
     plot_price_distribution(df)
     plot_top_makes(df)
     plot_price_vs_odometer(df)
@@ -200,7 +200,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     current_year = datetime.datetime.now().year
     df['vehicle_age'] = current_year - df['year']
     df['mileage_per_year'] = df['odometer'] / df['vehicle_age'].replace(0, 1)
-    print("\n✅ New features added: vehicle_age, mileage_per_year")
+    print("\nNew features added: vehicle_age, mileage_per_year")
     print(df[['year', 'vehicle_age', 'odometer', 'mileage_per_year']].head())
     return df
 
@@ -209,7 +209,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 # 5. MODEL BUILDING
 # ────────────────────────────────────────────────────────────
 FEATURES = [
-    'year', 'condition', 'odometer', 'mmr',
+    'year', 'condition', 'odometer',
     'vehicle_age', 'mileage_per_year', 'sale_year', 'sale_month',
     'make_enc', 'body_enc', 'transmission_enc', 'state_enc', 'color_enc'
 ]
@@ -252,7 +252,7 @@ def train_model(
     """Train a Linear Regression model."""
     model = LinearRegression()
     model.fit(X_train, y_train)
-    print("\n✅ Model trained.")
+    print("\nModel trained.")
     return model
 
 
@@ -270,7 +270,7 @@ def evaluate_model(
     mae  = mean_absolute_error(y_test, y_pred)
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
-    print("\n📈 Linear Regression Results:")
+    print("\nLinear Regression Results:")
     print(f"  R² Score : {r2:.4f}")
     print(f"  MAE      : ${mae:,.2f}")
     print(f"  RMSE     : ${rmse:,.2f}")
@@ -320,8 +320,8 @@ def save_model(
     """Save trained model and label encoders to disk."""
     joblib.dump(model, model_path)
     joblib.dump(le_dict, encoder_path)
-    print(f"\n💾 Model saved   → {model_path}")
-    print(f"💾 Encoders saved → {encoder_path}")
+    print(f"\nModel saved   - {model_path}")
+    print(f"Encoders saved - {encoder_path}")
 
 
 # ────────────────────────────────────────────────────────────
@@ -343,7 +343,7 @@ def run_pipeline(filepath: str = 'car_prices.csv') -> None:
     plot_actual_vs_predicted(y_test, y_pred)
     plot_feature_coefficients(model)
     save_model(model, le_dict)
-    print("\n🎉 Pipeline complete!")
+    print("\nPipeline complete!")
 
 
 # ────────────────────────────────────────────────────────────

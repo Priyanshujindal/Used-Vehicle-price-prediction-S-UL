@@ -46,19 +46,53 @@ def load_model():
     return model, label_encoders
 
 
+@st.cache_data
+def load_dataset_stats():
+    """
+    Read the dataset ONCE and extract the actual min/max ranges
+    for sliders and number inputs. This ensures nothing is hardcoded.
+    """
+    df = pd.read_csv("car_prices.csv")
+    return {
+        "year_min":      int(df["year"].min()),
+        "year_max":      int(df["year"].max()),
+        "condition_min": float(df["condition"].min()),
+        "condition_max": float(df["condition"].max()),
+        "odometer_max":  int(df["odometer"].max()),
+    }
+
+
 model, label_encoders = load_model()
+data_stats = load_dataset_stats()
 
 
 # ────────────────────────────────────────────────────────────
 # PREPARE DROPDOWN OPTIONS
-#   We pull the valid values from label_encoders so dropdowns
-#   only show values the model was trained on.
+#   All values come directly from label_encoders (trained on
+#   the real dataset). Nothing is hardcoded.
 # ────────────────────────────────────────────────────────────
-MAKES = sorted([m for m in label_encoders["make"].classes_ if len(m) > 1])
-BODIES = sorted([b for b in label_encoders["body"].classes_ if len(b) > 2])
-TRANSMISSIONS = ["automatic", "manual"]
-STATES = sorted([s for s in label_encoders["state"].classes_ if len(s) == 2 and s.isalpha()])
-COLORS = sorted([c for c in label_encoders["color"].classes_ if c.isalpha() and len(c) > 2])
+MAKES         = sorted([m for m in label_encoders["make"].classes_ if len(m) > 1])
+BODIES        = sorted([b for b in label_encoders["body"].classes_ if len(b) > 2])
+TRANSMISSIONS = sorted([t for t in label_encoders["transmission"].classes_ if t.isalpha() and t not in ("sedan",)])
+STATES        = sorted([s for s in label_encoders["state"].classes_ if len(s) == 2 and s.isalpha()])
+COLORS        = sorted([c for c in label_encoders["color"].classes_ if c.isalpha() and len(c) > 2])
+
+# Full state names for display (abbreviation → full name)
+STATE_NAMES = {
+    "ab": "Alberta", "al": "Alabama", "az": "Arizona", "ca": "California",
+    "co": "Colorado", "fl": "Florida", "ga": "Georgia", "hi": "Hawaii",
+    "il": "Illinois", "in": "Indiana", "la": "Louisiana", "ma": "Massachusetts",
+    "md": "Maryland", "mi": "Michigan", "mn": "Minnesota", "mo": "Missouri",
+    "ms": "Mississippi", "nc": "North Carolina", "ne": "Nebraska",
+    "nj": "New Jersey", "nm": "New Mexico", "ns": "Nova Scotia",
+    "nv": "Nevada", "ny": "New York", "oh": "Ohio", "ok": "Oklahoma",
+    "on": "Ontario", "or": "Oregon", "pa": "Pennsylvania", "pr": "Puerto Rico",
+    "qc": "Quebec", "sc": "South Carolina", "tn": "Tennessee", "tx": "Texas",
+    "ut": "Utah", "va": "Virginia", "wa": "Washington", "wi": "Wisconsin",
+}
+# Build display list: "California (ca)" and a reverse lookup
+STATE_DISPLAY = [f"{STATE_NAMES.get(s, s.upper())} ({s})" for s in STATES]
+STATE_DISPLAY_TO_CODE = {display: code for display, code in zip(STATE_DISPLAY, STATES)}
 
 
 # ────────────────────────────────────────────────────────────
@@ -87,17 +121,25 @@ with st.sidebar:
     body         = st.selectbox("Body Style",      BODIES,        index=BODIES.index("sedan") if "sedan" in BODIES else 0)
     transmission = st.selectbox("Transmission",    TRANSMISSIONS)
     color        = st.selectbox("Exterior Color",  COLORS,        index=COLORS.index("white") if "white" in COLORS else 0)
-    state        = st.selectbox("State (Location)",STATES,        index=STATES.index("ca") if "ca" in STATES else 0)
+    state_display = st.selectbox("State (Location)", STATE_DISPLAY,
+                                 index=STATE_DISPLAY.index("California (ca)") if "California (ca)" in STATE_DISPLAY else 0)
+    state = STATE_DISPLAY_TO_CODE[state_display]  # convert back to abbreviation for encoding
 
     st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
     st.markdown("## 📊 Specifications")
 
-    # --- Numeric inputs ---
-    # Year range 1982-2015 matches the training dataset
-    year      = st.slider("Model Year",      1982, 2015, 2012)
-    condition = st.slider("Condition (1–5)",  1.0, 5.0, 3.5, 0.5)
-    odometer  = st.number_input("Odometer (miles)",    min_value=0, max_value=500_000, value=35_000, step=1_000)
-    mmr       = st.number_input("MMR (Market Value $)", min_value=0, max_value=250_000, value=18_000, step=500)
+    # --- Numeric inputs (all ranges from the dataset, not hardcoded) ---
+    # Limit year to reasonable range for model reliability (1990-2015)
+    min_year = max(data_stats["year_min"], 1990)
+    year      = st.slider("Model Year",
+                          min_year, data_stats["year_max"],
+                          value=data_stats["year_max"] - 3)  # default: 3 years before max
+    condition = st.slider("Condition",
+                          data_stats["condition_min"], data_stats["condition_max"],
+                          value=3.5, step=0.5)
+    odometer  = st.number_input("Odometer (miles)",
+                                min_value=0, max_value=data_stats["odometer_max"],
+                                value=35_000, step=1_000)
 
     st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
 
@@ -136,11 +178,11 @@ with tab_predict:
         color_enc = safe_encode(label_encoders["color"],        color)
 
         # Step 3: Build the feature array (same order as training)
-        #   [year, condition, odometer, mmr,
+        #   [year, condition, odometer,
         #    vehicle_age, mileage_per_year, sale_year, sale_month,
         #    make_enc, body_enc, trans_enc, state_enc, color_enc]
         features = np.array([[
-            year, condition, odometer, mmr,
+            year, condition, odometer,
             vehicle_age, mileage_per_year, sale_year, sale_month,
             make_enc, body_enc, trans_enc, state_enc, color_enc
         ]])
@@ -148,7 +190,9 @@ with tab_predict:
         # Step 4: Predict
         predicted_price = max(model.predict(features)[0], 0)  # floor at $0
 
-        # Step 5: Show the result
+        # Step 5: Show the result with warning for old vehicles
+        if year < 1990:
+            st.warning("⚠️ **Limited Data**: Predictions for vehicles before 1990 may be unreliable due to insufficient training data.")
         st.markdown(f"""
         <div class="result-card">
             <p class="result-label">Estimated Selling Price</p>
@@ -160,43 +204,12 @@ with tab_predict:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Step 6: Show quick comparison metrics
-        col1, col2, col3, col4 = st.columns(4)
-        diff = predicted_price - mmr
-        col1.metric("vs MMR",      f"${diff:+,.0f}", delta=f"{diff/max(mmr,1)*100:+.1f}%")
-        col2.metric("Vehicle Age", f"{vehicle_age} yrs")
-        col3.metric("Miles / Year",f"{mileage_per_year:,.0f}")
-        col4.metric("Condition",   f"{condition:.1f} / 5.0")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Vehicle Age", f"{vehicle_age} yrs")
+        col2.metric("Miles / Year",f"{mileage_per_year:,.0f}")
+        col3.metric("Condition",   f"{condition:.1f} / 5.0")
 
         st.markdown("<br>", unsafe_allow_html=True)
-
-        # Step 7: Feature contribution chart
-        #   Shows how much each feature pushes the price up or down.
-        #   contribution = model_coefficient × feature_value
-        st.markdown("#### 🧩 Feature Contributions")
-        feature_names = [
-            "Year", "Condition", "Odometer", "MMR",
-            "Vehicle Age", "Miles/Year", "Sale Year", "Sale Month",
-            "Make", "Body", "Transmission", "State", "Color"
-        ]
-        contributions = model.coef_ * features[0]
-        contrib_df = pd.DataFrame({
-            "Feature": feature_names,
-            "Contribution ($)": contributions
-        }).sort_values("Contribution ($)", ascending=True)
-
-        fig = px.bar(
-            contrib_df, x="Contribution ($)", y="Feature",
-            orientation="h",
-            color="Contribution ($)",
-            color_continuous_scale=["#ec4899", "#6366f1", "#06b6d4"],
-            template="plotly_dark"
-        )
-        fig.update_layout(
-            height=420, coloraxis_showscale=False,
-            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="Inter"), yaxis_title="", margin=dict(l=10, r=10, t=10, b=10),
-        )
-        st.plotly_chart(fig, use_container_width=True)
 
     else:
         # Empty state — shown before the user clicks Predict
@@ -318,12 +331,11 @@ with tab_about:
         | 1 | Year | Numeric |
         | 2 | Condition | Numeric (1–5) |
         | 3 | Odometer | Numeric |
-        | 4 | MMR (Market Value) | Numeric |
-        | 5 | Vehicle Age | Engineered |
-        | 6 | Mileage per Year | Engineered |
-        | 7 | Sale Year | Date-derived |
-        | 8 | Sale Month | Date-derived |
-        | 9–13 | Make, Body, Transmission, State, Color | Encoded |
+        | 4 | Vehicle Age | Engineered |
+        | 5 | Mileage per Year | Engineered |
+        | 6 | Sale Year | Date-derived |
+        | 7 | Sale Month | Date-derived |
+        | 8–12 | Make, Body, Transmission, State, Color | Encoded |
         """)
 
     with right_col:
