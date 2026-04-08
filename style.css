@@ -1,0 +1,148 @@
+/* ══════════════════════════════════════════════════════════
+   Vehicle Price Predictor — Stylesheet
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Google Font ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ── Apply font everywhere ── */
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── Dark gradient sidebar ── */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 50%, #24243e 100%);
+}
+section[data-testid="stSidebar"] * {
+    color: #e0e0e0 !important;
+}
+
+/* ── Glassmorphic metric cards ── */
+div[data-testid="stMetric"] {
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.10));
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 16px;
+    padding: 20px 24px;
+    backdrop-filter: blur(12px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.25);
+}
+div[data-testid="stMetric"] label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.8;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── Gradient button ── */
+.stButton > button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: all 0.35s ease;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+    width: 100%;
+}
+.stButton > button:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 8px 30px rgba(139,92,246,0.45);
+}
+
+/* ── Tab styling ── */
+.stTabs [data-baseweb="tab-list"] { gap: 8px; }
+.stTabs [data-baseweb="tab"] {
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+}
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+    color: white !important;
+}
+
+/* ── Hero title with gradient text ── */
+.hero-title {
+    font-size: 2.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    margin-bottom: 0;
+}
+.hero-subtitle {
+    text-align: center;
+    font-size: 1.05rem;
+    opacity: 0.65;
+    margin-top: 6px;
+    margin-bottom: 30px;
+}
+
+/* ── Prediction result card ── */
+.result-card {
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08));
+    border: 1px solid rgba(99,102,241,0.30);
+    border-radius: 20px;
+    padding: 36px 28px;
+    text-align: center;
+    animation: fadeUp 0.6s ease-out;
+}
+.result-price {
+    font-size: 3.2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 12px 0 6px;
+}
+.result-label {
+    font-size: 0.90rem;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    font-weight: 700;
+    opacity: 0.6;
+}
+.result-desc {
+    font-size: 0.92rem;
+    opacity: 0.55;
+    margin-top: 8px;
+}
+
+/* ── Fade-in animation ── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Gradient horizontal line ── */
+.gradient-divider {
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #6366f1, #a855f7, #ec4899, transparent);
+    border: none;
+    border-radius: 2px;
+    margin: 28px 0;
+}
+
+/* ── Footer ── */
+.footer {
+    text-align: center;
+    opacity: 0.4;
+    font-size: 0.80rem;
+    padding: 30px 0 10px;
+}
