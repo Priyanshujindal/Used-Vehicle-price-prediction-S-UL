@@ -13,6 +13,9 @@ This project loads, cleans, and analyzes a dataset of used car sales to build a 
 - `Vehicle_Price_Prediction.py`: Python script for the full pipeline.
 - `vehicle_price_model.pkl`: Trained linear regression model (generated after running the script).
 - `label_encoders.pkl`: Saved label encoders for categorical features (generated after running the script).
+- `requirements.txt`: File containing Python dependencies.
+- `app.py`: Streamlit application for the vehicle price prediction interface.
+- `style.css`: CSS styles for the Streamlit app.
 
 ## Installation
 
@@ -24,7 +27,7 @@ This project loads, cleans, and analyzes a dataset of used car sales to build a 
    ```
 3. Install dependencies:
    ```
-   pip install numpy pandas matplotlib seaborn scikit-learn joblib
+   pip install -r requirements.txt
    ```
 
 ## Usage
