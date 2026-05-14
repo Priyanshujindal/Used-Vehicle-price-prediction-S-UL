@@ -199,7 +199,7 @@ with tab_predict:
             st.warning("⚠️ **Limited Data**: Predictions for vehicles before 1990 may be unreliable due to insufficient training data.")
         st.markdown(f"""
         <div class="result-card">
-            <p class="result-label">Oracle Estimate</p>
+            <p class="result-label">Estimate</p>
             <p class="result-price">${predicted_price:,.0f}</p>
             <p class="result-desc">Verified Specification: {year} {make.title()} · {body.title()} · {odometer:,} mi</p>
         </div>
