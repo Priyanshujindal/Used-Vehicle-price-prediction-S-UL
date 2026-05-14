@@ -17,8 +17,6 @@ import numpy as np
 import pandas as pd
 import joblib
 import datetime
-import plotly.express as px
-import plotly.graph_objects as go
 
 
 # ────────────────────────────────────────────────────────────
@@ -150,12 +148,18 @@ with st.sidebar:
 # ────────────────────────────────────────────────────────────
 # MAIN AREA — Header
 # ────────────────────────────────────────────────────────────
-st.markdown('<p class="hero-title">🚗 Vehicle Price Predictor</p>', unsafe_allow_html=True)
-st.markdown('<p class="hero-subtitle">AI-powered pricing using Linear Regression · trained on 500K+ auction records</p>', unsafe_allow_html=True)
+# Display the hero image
+try:
+    st.image("automotive_oracle_hero_1778744196125.png", use_container_width=True)
+except Exception:
+    pass
+
+st.markdown('<p class="hero-title">Automotive Oracle</p>', unsafe_allow_html=True)
+st.markdown('<p class="hero-subtitle">High-fidelity price intelligence engine · calibrated on 500K+ historical auction records</p>', unsafe_allow_html=True)
 st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
 
-# Three tabs for different sections
-tab_predict, tab_explore, tab_about = st.tabs(["🔮 Prediction", "📊 Explore Data", "ℹ️ About"])
+# Two tabs for different sections
+tab_predict, tab_about = st.tabs(["🔮 Predictive Engine", "ℹ️ Technical Specs"])
 
 
 # ────────────────────────────────────────────────────────────
@@ -195,9 +199,9 @@ with tab_predict:
             st.warning("⚠️ **Limited Data**: Predictions for vehicles before 1990 may be unreliable due to insufficient training data.")
         st.markdown(f"""
         <div class="result-card">
-            <p class="result-label">Estimated Selling Price</p>
+            <p class="result-label">Oracle Estimate</p>
             <p class="result-price">${predicted_price:,.0f}</p>
-            <p class="result-desc">{year} {make.title()} · {body.title()} · {odometer:,} mi</p>
+            <p class="result-desc">Verified Specification: {year} {make.title()} · {body.title()} · {odometer:,} mi</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -217,98 +221,17 @@ with tab_predict:
         with center:
             st.markdown("""
             <div class="result-card" style="margin-top:30px;">
-                <p style="font-size:3rem; margin:0;">🚗</p>
-                <p class="result-label" style="margin-top:12px;">Get Started</p>
+                <p style="font-size:4rem; margin:0; filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4));">👁️</p>
+                <p class="result-label" style="margin-top:16px;">Initiate Sequence</p>
                 <p class="result-desc">
-                    Fill in the vehicle details in the sidebar and hit
-                    <strong>Predict Price</strong>.
+                    Configure the vehicle parameters in the command center (sidebar)
+                    and activate the <strong>Predictive Engine</strong>.
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
 
-# ────────────────────────────────────────────────────────────
-# TAB 2 — EXPLORE DATA  (interactive charts from the dataset)
-# ────────────────────────────────────────────────────────────
-with tab_explore:
-    st.markdown("#### 📊 Dataset Insights")
-
-    # Load a 50K sample for fast chart rendering
-    @st.cache_data
-    def get_sample():
-        df = pd.read_csv("car_prices.csv")
-        for col in df.select_dtypes("object").columns:
-            df[col] = df[col].astype(str).str.lower().str.strip()
-        return df.sample(min(50_000, len(df)), random_state=42)
-
-    sample = get_sample()
-
-    # --- Row 1: Price histogram + Price vs Odometer scatter ---
-    left, right = st.columns(2)
-
-    with left:
-        st.markdown("##### Price Distribution")
-        fig1 = px.histogram(sample, x="sellingprice", nbins=80,
-                            color_discrete_sequence=["#6366f1"], template="plotly_dark")
-        fig1.update_layout(height=360, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                           font=dict(family="Inter"), margin=dict(l=10,r=10,t=30,b=10))
-        st.plotly_chart(fig1, use_container_width=True)
-
-    with right:
-        st.markdown("##### Price vs Odometer")
-        scatter_sample = sample.sample(min(5000, len(sample)), random_state=1)
-        fig2 = px.scatter(scatter_sample, x="odometer", y="sellingprice", color="year",
-                          color_continuous_scale="Plasma", opacity=0.55, template="plotly_dark")
-        fig2.update_traces(marker_size=4)
-        fig2.update_layout(height=360, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                           font=dict(family="Inter"), margin=dict(l=10,r=10,t=30,b=10))
-        st.plotly_chart(fig2, use_container_width=True)
-
-    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
-
-    # --- Row 2: Top makes bar + Avg price by year line ---
-    left2, right2 = st.columns(2)
-
-    with left2:
-        st.markdown("##### Top 15 Makes by Avg Price")
-        top_makes = (sample.groupby("make")["sellingprice"]
-                     .mean().sort_values(ascending=False).head(15).reset_index())
-        fig3 = px.bar(top_makes, x="sellingprice", y="make", orientation="h",
-                      color="sellingprice", color_continuous_scale=["#6366f1","#a855f7","#ec4899"],
-                      template="plotly_dark")
-        fig3.update_layout(height=420, coloraxis_showscale=False,
-                           plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                           font=dict(family="Inter"), yaxis=dict(autorange="reversed"),
-                           margin=dict(l=10,r=10,t=30,b=10))
-        st.plotly_chart(fig3, use_container_width=True)
-
-    with right2:
-        st.markdown("##### Avg Price by Year")
-        year_avg = sample.groupby("year")["sellingprice"].mean().reset_index().sort_values("year")
-        fig4 = go.Figure()
-        fig4.add_trace(go.Scatter(
-            x=year_avg["year"], y=year_avg["sellingprice"],
-            mode="lines+markers",
-            line=dict(color="#a855f7", width=3),
-            marker=dict(size=6, color="#ec4899"),
-            fill="tozeroy", fillcolor="rgba(168,85,247,0.10)",
-        ))
-        fig4.update_layout(height=420, template="plotly_dark",
-                           plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                           font=dict(family="Inter"), xaxis_title="Year", yaxis_title="Avg Price ($)",
-                           margin=dict(l=10,r=10,t=30,b=10))
-        st.plotly_chart(fig4, use_container_width=True)
-
-    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
-
-    # --- Row 3: Correlation heatmap ---
-    st.markdown("##### Correlation Heatmap")
-    num_cols = [c for c in ["year","condition","odometer","mmr","sellingprice"] if c in sample.columns]
-    fig5 = px.imshow(sample[num_cols].corr(), text_auto=".2f",
-                     color_continuous_scale=["#1e1b4b","#6366f1","#ec4899"], template="plotly_dark")
-    fig5.update_layout(height=420, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                       font=dict(family="Inter"), margin=dict(l=10,r=10,t=30,b=10))
-    st.plotly_chart(fig5, use_container_width=True)
+# (Market Analysis tab removed for efficiency)
 
 
 # ────────────────────────────────────────────────────────────

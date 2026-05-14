@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Brain / Artifacts (if any)
+.system_generated/
+scratch/
