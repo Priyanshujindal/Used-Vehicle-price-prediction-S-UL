@@ -69,11 +69,11 @@ data_stats = load_dataset_stats()
 #   All values come directly from label_encoders (trained on
 #   the real dataset). Nothing is hardcoded.
 # ────────────────────────────────────────────────────────────
-MAKES         = sorted([m for m in label_encoders["make"].classes_ if len(m) > 1])
-BODIES        = sorted([b for b in label_encoders["body"].classes_ if len(b) > 2])
-TRANSMISSIONS = sorted([t for t in label_encoders["transmission"].classes_ if t.isalpha() and t not in ("sedan",)])
-STATES        = sorted([s for s in label_encoders["state"].classes_ if len(s) == 2 and s.isalpha()])
-COLORS        = sorted([c for c in label_encoders["color"].classes_ if c.isalpha() and len(c) > 2])
+MAKES         = sorted([str(m) for m in label_encoders["make"].classes_ if isinstance(m, str) and len(m) > 1])
+BODIES        = sorted([str(b) for b in label_encoders["body"].classes_ if isinstance(b, str) and len(b) > 2])
+TRANSMISSIONS = sorted([str(t) for t in label_encoders["transmission"].classes_ if isinstance(t, str) and t.isalpha() and t not in ("sedan",)])
+STATES        = sorted([str(s) for s in label_encoders["state"].classes_ if isinstance(s, str) and len(s) == 2 and s.isalpha()])
+COLORS        = sorted([str(c) for c in label_encoders["color"].classes_ if isinstance(c, str) and c.isalpha() and len(c) > 2])
 
 # Full state names for display (abbreviation → full name)
 STATE_NAMES = {
