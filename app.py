@@ -57,6 +57,7 @@ def load_dataset_stats():
         "condition_min": float(df["condition"].min()),
         "condition_max": float(df["condition"].max()),
         "odometer_max":  int(df["odometer"].max()),
+        "mmr_max":       int(df["mmr"].max()),
     }
 
 
@@ -138,6 +139,9 @@ with st.sidebar:
     odometer  = st.number_input("Odometer (miles)",
                                 min_value=0, max_value=data_stats["odometer_max"],
                                 value=35_000, step=1_000)
+    mmr       = st.number_input("MMR (Market Value)",
+                                min_value=0, max_value=data_stats["mmr_max"],
+                                value=10_000, step=500)
 
     st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
 
@@ -182,11 +186,11 @@ with tab_predict:
         color_enc = safe_encode(label_encoders["color"],        color)
 
         # Step 3: Build the feature array (same order as training)
-        #   [year, condition, odometer,
+        #   [year, condition, odometer, mmr,
         #    vehicle_age, mileage_per_year, sale_year, sale_month,
         #    make_enc, body_enc, trans_enc, state_enc, color_enc]
         features = np.array([[
-            year, condition, odometer,
+            year, condition, odometer, mmr,
             vehicle_age, mileage_per_year, sale_year, sale_month,
             make_enc, body_enc, trans_enc, state_enc, color_enc
         ]])
@@ -254,11 +258,12 @@ with tab_about:
         | 1 | Year | Numeric |
         | 2 | Condition | Numeric (1–5) |
         | 3 | Odometer | Numeric |
-        | 4 | Vehicle Age | Engineered |
-        | 5 | Mileage per Year | Engineered |
-        | 6 | Sale Year | Date-derived |
-        | 7 | Sale Month | Date-derived |
-        | 8–12 | Make, Body, Transmission, State, Color | Encoded |
+        | 4 | MMR | Numeric |
+        | 5 | Vehicle Age | Engineered |
+        | 6 | Mileage per Year | Engineered |
+        | 7 | Sale Year | Date-derived |
+        | 8 | Sale Month | Date-derived |
+        | 9–13 | Make, Body, Transmission, State, Color | Encoded |
         """)
 
     with right_col:
